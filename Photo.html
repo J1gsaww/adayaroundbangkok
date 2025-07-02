@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Selfie with Frame</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background-color: #003fa3;
+      font-family: sans-serif;
+    }
+
+    .camera-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      transform: scaleX(-1);
+    }
+
+    .frame-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .mask {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      background-color: #2156A6;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .left-mask {
+      left: 0;
+    }
+
+    .right-mask {
+      right: 0;
+    }
+
+    .button-container {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #ffffff;
+      color: #003fa3;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="camera-container">
+  <video id="video" autoplay playsinline></video>
+  <img id="frame" src="Frame.png" class="frame-overlay" alt="Frame" />
+  <div class="mask left-mask" id="leftMask"></div>
+  <div class="mask right-mask" id="rightMask"></div>
+  <div class="button-container">
+    <button onclick="takePhoto()">📷 Take Selfie</button>
+  </div>
+</div>
+
+<canvas id="canvas" style="display: none;"></canvas>
+
+<script>
+  const video = document.getElementById('video');
+  const frame = document.getElementById('frame');
+  const leftMask = document.getElementById('leftMask');
+  const rightMask = document.getElementById('rightMask');
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
+    .then(stream => {
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      alert("Camera access denied or not available.");
+      console.error(err);
+    });
+
+  // คำนวณขนาด frame บนจอจริง แล้ววาดสี่เหลี่ยมครอบ
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const containerWidth = window.innerWidth;
+      const containerHeight = window.innerHeight;
+
+      const naturalWidth = frame.naturalWidth;
+      const naturalHeight = frame.naturalHeight;
+      const frameAspect = naturalWidth / naturalHeight;
+      const containerAspect = containerWidth / containerHeight;
+
+      let renderedFrameWidth;
+      if (frameAspect < containerAspect) {
+        // เต็มสูง
+        renderedFrameWidth = containerHeight * frameAspect;
+      } else {
+        // เต็มกว้าง
+        renderedFrameWidth = containerWidth;
+      }
+
+      const sideWidth = (containerWidth - renderedFrameWidth) / 2;
+
+      leftMask.style.width = sideWidth + 'px';
+      rightMask.style.width = sideWidth + 'px';
+    }, 100);
+  });
+
+  function takePhoto() {
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    const frameImg = new Image();
+    frameImg.src = "Frame.png";
+
+    frameImg.onload = () => {
+      const frameWidth = frameImg.width;
+      const frameHeight = frameImg.height;
+
+      canvas.width = frameWidth;
+      canvas.height = frameHeight;
+
+      const videoWidth = video.videoWidth;
+      const videoHeight = video.videoHeight;
+
+      const frameAspect = frameWidth / frameHeight;
+      const videoAspect = videoWidth / videoHeight;
+
+      let cropWidth, cropHeight, sx, sy;
+
+      if (videoAspect > frameAspect) {
+        cropHeight = videoHeight;
+        cropWidth = cropHeight * frameAspect;
+        sx = (videoWidth - cropWidth) / 2;
+        sy = 0;
+      } else {
+        cropWidth = videoWidth;
+        cropHeight = cropWidth / frameAspect;
+        sx = 0;
+        sy = (videoHeight - cropHeight) / 2;
+      }
+
+      context.save();
+    context.translate(frameWidth, 0);
+    context.scale(-1, 1);
+    context.drawImage(video, sx, sy, cropWidth, cropHeight, 0, 0, frameWidth, frameHeight);
+    context.restore();
+      context.drawImage(frameImg, 0, 0, frameWidth, frameHeight);
+
+      const dataURL = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = 'selfie.png';
+      link.click();
+    };
+  }
+</script>
+
+</body>
+</html>

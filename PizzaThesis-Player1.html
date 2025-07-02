@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Envelope Flip Animation</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #00B33A;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    /* 1. Envelope container */
+    .envelope-container {
+      width: 350px;
+      height: 230px;
+      perspective: 1000px;
+      position: relative;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+    .envelope-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+    }
+    .envelope-container.flipped .envelope-inner {
+      transform: rotateY(180deg);
+    }
+    .face-front,
+    .face-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      z-index: 1;
+    }
+    .face-back {
+      transform: rotateY(180deg);
+      background: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+
+
+    /* Front face: envelope */
+    .face-front .envelope-box {
+      width: 100%;
+      height: 100%;
+      background: #F2F2F2;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 0;
+    }
+    
+    .face-front .envelope-flap {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 140px;
+      background: #FFFFFF;
+      clip-path: polygon(0% 0%, 50% 100%, 100% 0%);
+      z-index: 3;
+      transform-origin: top center;
+      transition: transform 0.6s ease, z-index 0s 0.6s;
+    }
+    .face-front .envelope-flap-shadow {
+      position: absolute;
+      top: 80px; left: 0; right: 0;
+      height: 150px;
+      background: #E6E7E9;
+      clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+    .face-front .triangle-left {
+      position: absolute;
+      top: 0px;
+      left: 0;
+      width: 220px;
+      height: 230px;
+      background: #f1f2f2;
+      clip-path: polygon(100% 70%, 0 0, 0 100%);
+      z-index: 1;
+    }
+    .face-front .triangle-right {
+      position: absolute;
+      top: 0px;
+      right: 0;
+      width: 220px;
+      height: 230px;
+      background: #f1f2f2;
+      clip-path: polygon(0 70%, 100% 0, 100% 100%);
+      z-index: 1;
+    }
+    .face-front .envelope-overlay {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 26px;
+      font-weight: bold;
+      color: rgba(0,0,0,0.2);
+      user-select: none;
+      pointer-events: none;
+      z-index: 4;
+      transition: opacity 0.3s ease;
+    }
+
+    .face-front .inner-paper {
+      position: absolute;
+      top: 70px;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      background: #ffedbb;
+      z-index: 0;
+      border-radius: 8px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+      transition: top 0.5s ease-out 0.5s;
+      overflow: hidden; /* เพิ่มเพื่อซ่อนข้อความที่อาจจะล้นออกไป */
+    }
+
+    .paper-content {
+      padding: 20px 15px;
+      box-sizing: border-box;
+      text-align: center;
+      color: #f16d22;
+      font-size: 14px;
+      line-height: 1.2;
+    } 
+
+    
+    .envelope-container.unlocked .face-front .envelope-flap {
+      transform: rotateX(180deg);
+      z-index: -1; 
+    }
+    
+    .envelope-container.unlocked .face-front .inner-paper {
+        top: -100px;
+    }
+
+    /* Back face: plain white */
+    .face-back { }
+    .face-back .stamp {
+      position: absolute;
+      top: 14px; right: 8px;
+      width: 70px; height: auto;
+      z-index: 5;
+    }
+    .face-back .back-text {
+      position: absolute;
+      top: 9px; left: 16px;
+      color: #ffd252;
+      font-size: 14px;
+      white-space: pre-line;
+      user-select: none;
+      z-index: 4;
+      line-height: 0.8;
+    }
+    .face-back .center-message {
+      position: absolute;
+      top: 55%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-size: 15px;
+      color: #f16d22;
+      line-height: 1.8;
+      white-space: nowrap;
+      user-select: none;
+      z-index: 3;
+    }
+    .face-back .password-hint {
+      position: absolute;
+      bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      color: #f16d22;
+      font-size: 14px;
+      text-align: center;
+      line-height: 1.6;
+      user-select: none;
+      z-index: 3;
+    }
+    .face-back .password-hint strong { font-weight: bold; }
+    .face-back .speech-bubble {
+      position: absolute;
+      top: -150px; right: 20px;
+      width: 250px;
+      background: #ffedbb; color: #8a7437;
+      font-size: 12px;
+      padding-top: 12px;
+      padding-right: 20px;
+      padding-bottom: 20px;
+      padding-left: 20px;
+      border-radius: 16px;
+      line-height: 0.8;
+      z-index: 6;
+      white-space: pre-line;
+      font-family: sans-serif;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease 0.6s;
+    }
+    .face-back .speech-bubble::after {
+      content: "";
+      position: absolute;
+      top: calc(100% - 2px); right: 30px;
+      width: 14px; height: 35px;
+      background: #ffedbb;
+      clip-path: polygon(100% 0%, 0 0, 100% 100%);
+      transform: rotate(350deg);
+      transform-origin: center top;
+    }
+    .input-wrapper, .remarks {
+      transition: opacity 0.3s ease 0.6s;
+    }
+    .envelope-container.flipped ~ .input-wrapper,
+    .envelope-container.flipped ~ .remarks {
+      opacity: 0; pointer-events: none;
+    }
+    .envelope-container.flipped .face-back .speech-bubble {
+      opacity: 1; pointer-events: auto;
+    }
+
+    /* 2. Input box */
+    .input-wrapper { width: 350px; position: relative; }
+    .input-wrapper input[type="text"] { width:100%; height:50px;
+      padding:0 50px 0 16px; font-size:14px;
+      border:none; border-radius:9999px;
+      outline:none; background:#FFD029; color:#4a3300;
+      box-sizing:border-box;
+    }
+    .input-wrapper input::placeholder { color:#6b4e00; }
+    .enter-button {
+      position:absolute; right:10px; top:7px;
+      height:35px; padding:0 12px; font-size:13px;
+      background:#FF6200; color:white;
+      border:none; border-radius:9999px;
+      cursor:pointer; font-weight:bold;
+      transition:background 0.3s;
+    }
+    .enter-button:hover { background:#DE5500; }
+    .error { margin-top:10px; text-align:center;
+      color:#f8d7da; font-size:14px;
+    }
+
+    /* 3. Remarks */
+    .remarks { width:350px; text-align:center;
+      font-size:14px; user-select:none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="envelope-container" id="envelope">
+    <div class="envelope-inner">
+      <div class="face-front">
+        <div class="envelope-box"></div>
+        
+        <div class="inner-paper">
+            <div class="paper-content">
+                I know you could crack this,<br>
+                so I left something for you.<br>
+                Tell Pizza "meow" she will hand it to you<br>
+                Don't overthinking just need to use<br>
+                a cat's eyes to find the answer.<br>
+                Because what you rellay want<br>
+                is right in front of you.<br>
+                <br>
+                Meowwwww<br>
+                Kiamyee
+            </div>
+        </div>
+
+        <div class="envelope-flap"></div>
+        <div class="envelope-flap-shadow"></div>
+        <div class="triangle-left"></div>
+        <div class="triangle-right"></div>
+        <div class="envelope-overlay" id="overlay">Tap to flip</div>
+      </div>
+      <div class="face-back">
+        <img src="Stamp.png" alt="Stamp" class="stamp" />
+        <div class="back-text">
+          <strong>From</strong> Sia Kiamyee<br>
+          Bangbon, Thailand
+        </div>
+        <div class="center-message">
+          Each letter moves forward by a certain step,<br>
+          reveal the message by following the pattern.
+        </div>
+        <div class="password-hint">
+          Here is the password <strong>“FIFDFWTZSIJRVZFYNJW”</strong>
+        </div>
+        <div class="speech-bubble">
+          <strong>HINTS:</strong><br>
+          UFWNYHMDXYZINT = PARITCHYSTUDIO<br>
+          PNFRDJJYMJHFY = KIAMYEETHECAT<br>
+          RDYMJXNX = MYTHESIS
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-wrapper">
+    <input type="text" id="inputBox" placeholder="Enter the password" />
+    <button class="enter-button" onclick="checkAnswer()">Enter</button>
+    <div id="errorMsg" class="error"></div>
+  </div>
+
+  <p class="remarks" id="remarks">Remarks: Enter without space or any capital letter</p>
+
+  <script>
+    const envelope = document.getElementById('envelope');
+    const overlay = document.getElementById('overlay');
+    let unlocked = false;
+
+    envelope.addEventListener('click', () => {
+      if (!unlocked) {
+        envelope.classList.toggle('flipped');
+      }
+    });
+
+    function checkAnswer() {
+      const input = document.getElementById("inputBox").value.trim().toLowerCase();
+      const errorMsg = document.getElementById("errorMsg");
+      errorMsg.textContent = "";
+
+      if (input === "adayaroundemquatier") {
+        unlocked = true;
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            envelope.classList.add('unlocked');
+            document.querySelector('.input-wrapper').style.opacity = '0';
+            document.querySelector('.input-wrapper').style.pointerEvents = 'none';
+            document.getElementById('remarks').style.opacity = '0';
+            document.getElementById('remarks').style.pointerEvents = 'none';
+        }, 300);
+
+      } else {
+        errorMsg.textContent = "Wrong Answer";
+      }
+    }
+  </script>
+</body>
+</html>

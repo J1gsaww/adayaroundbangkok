@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A Day Around Bangkok - Home</title>
+  <style>
+    html, body {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logo {
+      margin-top: 40px;
+      margin-bottom: 200px;
+      width: 70%;
+      max-width: 180px;
+    }
+
+    .blue-box-wrapper {
+      width: 100%;
+      flex: 1;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .blue-box {
+    position: relative;
+    background: linear-gradient(to bottom, #0055B7, #112546);
+    border-radius: 40px 40px 0 0;
+    width: 90%;
+    max-width: 350px;
+    padding: 0px 20px 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow: visible; /* ยืนยันว่าล้นได้ */
+}
+
+    .description {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: white;
+      text-align: center;
+      max-width: 300px;
+    }
+
+    .button-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
+    }
+
+    .btn {
+      width: 280px;
+      height: 40px;
+      padding: 12px;
+      border: none;
+      border-radius: 30px;
+      font-size: 15px;
+      color: white;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .player1 {
+      background-color: #06b04b;
+    }
+
+    .player2 {
+      background-color: #f16d22;
+    }
+
+    @media (min-height: 600px) {
+      .blue-box {
+        min-height: calc(100vh - 200px);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <img src="logo.png" alt="Logo" class="logo" />
+
+  <div class="blue-box-wrapper">
+    <div class="blue-box">
+        <img src="Friends.png" alt="Friends"
+        style="
+            margin-top: -108px;
+            width: 150%;
+            min-width: 450px;
+            position: relative;
+            z-index: 1;
+        " />
+
+
+      <p class="description">
+        Pair up with your friend and help Pizza find her missing friend!
+      </p>
+
+      <div class="button-container">
+        <a href="PizzaThesis-Player1.html" class="btn player1">Player 1</a>
+        <a href="PizzaThesis-Player2.html" class="btn player2">Player 2</a>
+      </div>
+    </div>
+  </div>
+    
+
+</body>
+</html>

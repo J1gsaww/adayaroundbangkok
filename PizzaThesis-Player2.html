@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phone Dial Pad</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #ff6200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+    .carousel {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+    }
+    .carousel > div {
+      flex: none;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      scroll-snap-align: start;
+    }
+    .container {
+      background: white;
+      width: 100%;
+      max-width: 300px;
+      height: 90%;
+      max-height: 550px;
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      }
+
+    .chat-header {
+      background: #ffd252;
+      padding-top: 20px;
+      padding-left: 40px;
+      text-align: left;
+      font-weight: bold;
+      font-size: 18px;
+      color: #8a7437;
+      height: 35px;
+      border-top-left-radius: 30px;
+      border-top-right-radius: 30px;
+    }
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 20px 0;
+      position: relative;
+      flex: 1;
+    }
+    .error-msg {
+      color: red;
+      font-size: 14px;
+      height: 20px;
+      margin-bottom: 10px;
+    }
+    .display {
+      font-size: 24px;
+      letter-spacing: 2px;
+      color: #ccc;
+      margin-bottom: 30px;
+      min-height: 30px;
+    }
+    .pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      padding: 0 30px;
+      margin-bottom: 20px;
+    }
+    .pad button {
+      background: #86c6ff;
+      color: #003366;
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 50%;
+      height: 60px;
+      width: 60px;
+      cursor: pointer;
+      position: relative;
+      transition: opacity 0.2s;
+    }
+    .pad button:hover {
+      opacity: 0.8;
+    }
+    .pad button span {
+      display: block;
+      font-size: 10px;
+      font-weight: normal;
+      color: #003366;
+      position: absolute;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .action-wrapper {
+      position: relative;
+      width: 100%;
+      height: 60px;
+      margin-top: 0px;
+    }
+    .call-btn {
+      background: #00c853;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .call-btn i {
+      color: white;
+      font-size: 22px;
+    }
+    .call-btn:hover {
+      opacity: 0.9;
+    }
+    .delete-btn {
+      width: 30px;
+      height: 20px;
+      background: #d1d3d4;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      clip-path: polygon(30% 0%, 100% 0%, 100% 100%, 30% 100%, 0% 50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s;
+      position: absolute;
+      top: 20px;
+      left: calc(50% + 40px);
+    }
+    .delete-icon {
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+      position: relative;
+      left: 2px;
+    }
+    .dots-container {
+      position: absolute;
+      top: calc(50% + 250px);
+      bottom: 40px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+    }
+    .dots-background {
+      background: #ff914d;
+      border-radius: 30px;
+      padding: 6px 14px;
+      display: flex;
+      gap: 8px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+    }
+    .dot.active {
+      background: white;
+    }
+    .message-container {
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      gap: 10px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .message {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+    .message.receiver {
+      justify-content: flex-start;
+    }
+    .message.sender {
+      justify-content: flex-end;
+    }
+    .message .bubble {
+      padding: 10px 15px;
+      border-radius: 18px;
+      max-width: 70%;
+    }
+    .receiver .bubble {
+      background: #06b04b;
+      color: white;
+      border-bottom-left-radius: 0;
+    }
+    .sender .bubble {
+      background: #c7eac7;
+      color: black;
+      border-bottom-right-radius: 0;
+    }
+    .chat-input {
+      display: flex;
+      padding: 12px;
+      background: #ffd252;
+      border-top: 1px solid #ccc;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 10px 12px 10px 16px;
+      border: none;
+      border-radius: 20px;
+      background: #add8ff;
+      color: #093474;
+      font-size: 14px;
+      text-align: left;
+    }
+    .chat-input button {
+      margin-left: 10px;
+      background: #1453b1;
+      border: none;
+      color: white;
+      padding: 10px 12px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .chat-input button:hover {
+      opacity: 0.8;
+    }
+    .icon-img {
+      width: 32px;
+      height: 32px;
+    }
+    ::placeholder {
+      color: white;
+      opacity: 1;
+    }
+    .call-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #ff6200;
+      z-index: 10;
+    }
+@media (max-width: 400px) {
+  .container{
+    margin-bottom: 10vh;
+  }
+
+  .dots-container{
+    margin-bottom: 4px;
+  }
+
+  .pad button {
+  width: 60px;
+  height: 60px;
+  font-size: 18px;
+  }
+
+  .display {
+    font-size: 20px;
+  }
+
+  .call-btn {
+  width: 60px;
+  height: 60px;
+  font-size: 18px;
+}
+  .delete-btn {
+  left: calc(50% + 40px);
+  }
+  .delete-icon {
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      position: relative;
+      left: 4px;
+    }
+  .chat-input input {
+    font-size: 16px;
+    transform: scale(0.875); 
+    transform-origin: left center;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <div class="carousel" id="carousel">
+    <div>
+      <div class="container">
+        <div class="content">
+          <div class="error-msg" id="errorMsg"></div>
+          <div class="display" id="display">XX-XXXX-XXXX</div>
+          <div class="pad">
+            <button onclick="press('1')">1</button>
+            <button onclick="press('2')">2<span>ABC</span></button>
+            <button onclick="press('3')">3<span>DEF</span></button>
+            <button onclick="press('4')">4<span>GHI</span></button>
+            <button onclick="press('5')">5<span>JKL</span></button>
+            <button onclick="press('6')">6<span>MNO</span></button>
+            <button onclick="press('7')">7<span>PQRS</span></button>
+            <button onclick="press('8')">8<span>TUV</span></button>
+            <button onclick="press('9')">9<span>WXYZ</span></button>
+            <div></div>
+            <button onclick="press('0')">0</button>
+            <div></div>
+          </div>
+          <div class="action-wrapper">
+            <button class="call-btn" onclick="call()">
+              <i class="fas fa-phone"></i>
+            </button>
+            <button class="delete-btn" onclick="del()">
+              <span class="delete-icon">&#x2715;</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="container">
+        <div class="chat-header">Kiamyeethecat</div>
+        <div class="message-container" id="chatContainer">
+          <div class="message receiver">
+            <img class="icon-img" src="Caticon.png">
+            <div class="bubble">Call me. Strangers get silence, friends get secrets.</div>
+          </div>
+          <div class="message receiver">
+            <img class="icon-img" src="Caticon.png">
+            <div class="bubble">10 digits, no more, no less. Find them, and I’ll spill the tea.</div>
+          </div>
+        </div>
+        <div class="chat-input">
+          <input id="userInput" type="text" placeholder="Enter a message" />
+          <button onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="dots-container">
+    <div class="dots-background">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+  <div class="call-screen" id="callScreen">
+    <div class="container">
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+        <div style="margin-top: 40px;">
+          <img src="Caticon.png" style="width: 120px; height: 120px; border-radius: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);" />
+        </div>
+        <div style="margin-top: 24px; font-size: 14px; color: #00b050;">Calling</div>
+        <div style="margin-top: 4px; font-size: 20px; font-weight: bold; color: #00b050;">Kiamyeethecat</div>
+        <div id="callTimer" style="margin-top: 16px; font-size: 14px; color: #00b050;">00:00:00</div>
+        <button onclick="endCall()" style="
+          margin-top: 32px;
+          background: #d32f2f;
+          width: 60px;
+          height: 60px;
+          border: none;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+          cursor: pointer;
+        ">
+          <i class="fas fa-phone-slash" style="color: white; font-size: 20px;"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+    let input = "";
+    let callStartTime, callInterval;
+
+    function formatDisplay(num) {
+      if (num.length === 0) return "XX-XXXX-XXXX";
+      let part1 = num.slice(0, 2);
+      let part2 = num.slice(2, 6);
+      let part3 = num.slice(6, 10);
+      return [part1, part2, part3].filter(p => p).join("-");
+    }
+
+    function press(digit) {
+      if (input.length < 10) {
+        input += digit;
+        updateDisplay();
+      }
+    }
+
+    function del() {
+      input = input.slice(0, -1);
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      document.getElementById("display").textContent = formatDisplay(input);
+      document.getElementById("errorMsg").textContent = "";
+    }
+
+    function call() {
+      if (input === "1213072025") {
+        startCallScreen();
+      } else {
+        document.getElementById("errorMsg").textContent = "Can't find this number";
+      }
+    }
+
+    function startCallScreen() {
+      document.getElementById("carousel").style.display = "none";
+      document.getElementById("callScreen").style.display = "flex";
+      callStartTime = Date.now();
+      callInterval = setInterval(updateCallTimer, 1000);
+    }
+
+    function updateCallTimer() {
+      const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+      const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+      const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+      const s = String(elapsed % 60).padStart(2, '0');
+      document.getElementById("callTimer").textContent = `${h}:${m}:${s}`;
+    }
+
+    function endCall() {
+      clearInterval(callInterval);
+      document.getElementById("callTimer").textContent = "00:00:00";
+      document.getElementById("callScreen").style.display = "none";
+      document.getElementById("carousel").style.display = "flex";
+      input = "";
+      updateDisplay();
+    }
+
+    const carousel = document.getElementById("carousel");
+    const dots = document.querySelectorAll(".dot");
+
+    carousel.addEventListener("scroll", () => {
+      const scrollLeft = carousel.scrollLeft;
+      const width = carousel.offsetWidth;
+      const index = Math.round(scrollLeft / width);
+      dots.forEach((dot, i) => {
+        dot.classList.toggle("active", i === index);
+      });
+    });
+
+    carousel.addEventListener("scroll", () => {
+      const scrollLeft = carousel.scrollLeft;
+      const width = carousel.offsetWidth;
+      const index = Math.round(scrollLeft / width);
+      dots.forEach((dot, i) => {
+        dot.classList.toggle("active", i === index);
+      });
+    });
+
+    function sendMessage() {
+      const inputEl = document.getElementById("userInput");
+      const msg = inputEl.value.trim();
+      if (!msg) return;
+
+      const chat = document.getElementById("chatContainer");
+
+      const userMsg = document.createElement("div");
+      userMsg.className = "message sender";
+      userMsg.innerHTML = `
+        <div class="bubble">${msg}</div>
+        <img class="icon-img" src="User.png" />
+      `;
+      chat.appendChild(userMsg);
+      inputEl.value = "";
+      chat.scrollTop = chat.scrollHeight;
+
+      setTimeout(() => {
+        const replyMsg = document.createElement("div");
+        replyMsg.className = "message receiver";
+
+        if (msg.toLowerCase() === "pizza") {
+          replyMsg.innerHTML = `
+            <img class="icon-img" src="Caticon.png" />
+            <div class="bubble" style="background: white; border: 4px solid #06b04b; padding: 0; border-radius: 12px;">
+              <div style="background: #f16d22; color: white; font-weight: bold; font-size: 12px ;text-align: center; padding: 6px; border-top-left-radius: 8px; border-top-right-radius: 8px;">SECRET!</div>
+              <div style="padding: 12px; text-align: center; color: #f16d22; font-size: 12px;">
+                You’ve found the place<br>where your friend<br>has been hiding.
+              </div>
+              <div style="text-align: center; padding-bottom: 10px;">
+                <a href="Photo.html" target="_blank" style="
+                  background: #0066cc;
+                  color: white;
+                  text-decoration: none;
+                  padding: 6px 20px;
+                  border-radius: 16px;
+                  font-weight: bold;
+                  display: inline-block;
+                ">Open</a>
+              </div>
+            </div>
+          `;
+        } else {
+          const responses = [
+            "Meoww",
+            "Meow.. Meow..",
+            "Yes, I am Kiamyee",
+            "You need to find a numbers",
+            "I won't tell you a numbers. Anyways, pls call me"
+          ];
+          const reply = responses[Math.floor(Math.random() * responses.length)];
+          replyMsg.innerHTML = `
+            <img class="icon-img" src="Caticon.png" />
+            <div class="bubble">${reply}</div>
+          `;
+        }
+
+        chat.appendChild(replyMsg);
+        chat.scrollTop = chat.scrollHeight;
+      }, 500);
+    }
+    document.getElementById("userInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+    e.preventDefault();
+    const index = Math.round(document.getElementById("carousel").scrollLeft / document.getElementById("carousel").offsetWidth);
+    if (index === 1) {
+    sendMessage();
+    }
+}
+});
+
+  </script>
+</body>
+</html>
