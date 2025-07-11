@@ -83,7 +83,7 @@
 
 <div class="camera-container">
   <video id="video" autoplay playsinline></video>
-  <img id="frame" src="Frame.png" class="frame-overlay" alt="Frame" />
+  <img id="frame" src="FrameFix.png" class="frame-overlay" alt="Frame" />
   <div class="mask left-mask" id="leftMask"></div>
   <div class="mask right-mask" id="rightMask"></div>
   <div class="button-container">
@@ -139,7 +139,7 @@
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
     const frameImg = new Image();
-    frameImg.src = "Frame.png";
+    frameImg.src = "FrameFix.png";
 
     frameImg.onload = () => {
       const frameWidth = frameImg.width;
