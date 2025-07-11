@@ -410,10 +410,12 @@
       </div>
     </div>
   </div>
+
   <script>
     let input = "";
-    let callStartTime, callInterval;
-
+    let callStartTime, callInterval; // นำ callStartTime กลับมา
+    let audio;
+  
     function formatDisplay(num) {
       if (num.length === 0) return "XX-XXXX-XXXX";
       let part1 = num.slice(0, 2);
@@ -421,37 +423,30 @@
       let part3 = num.slice(6, 10);
       return [part1, part2, part3].filter(p => p).join("-");
     }
-
+  
     function press(digit) {
       if (input.length < 10) {
         input += digit;
         updateDisplay();
       }
     }
-
+  
     function del() {
       input = input.slice(0, -1);
       updateDisplay();
     }
-
+  
     function updateDisplay() {
       document.getElementById("display").textContent = formatDisplay(input);
       document.getElementById("errorMsg").textContent = "";
     }
-
+  
     function call() {
       if (input === "1213072025") {
         startCallScreen();
       } else {
         document.getElementById("errorMsg").textContent = "Can't find this number";
       }
-    }
-
-    function startCallScreen() {
-      document.getElementById("carousel").style.display = "none";
-      document.getElementById("callScreen").style.display = "flex";
-      callStartTime = Date.now();
-      callInterval = setInterval(updateCallTimer, 1000);
     }
 
     function updateCallTimer() {
@@ -461,19 +456,51 @@
       const s = String(elapsed % 60).padStart(2, '0');
       document.getElementById("callTimer").textContent = `${h}:${m}:${s}`;
     }
+  
+    function startCallScreen() {
+      document.getElementById("carousel").style.display = "none";
+      document.getElementById("callScreen").style.display = "flex";
 
+      callStartTime = Date.now();
+      callInterval = setInterval(updateCallTimer, 1000);
+      
+      audio = new Audio("Kiamyee's Voice.mp3");
+      audio.play();
+  
+      audio.onended = function() {
+        clearInterval(callInterval); 
+        const callTimerEl = document.getElementById("callTimer");
+
+        callTimerEl.style.color = "red"
+        callTimerEl.textContent = "Call Ended"; 
+        
+        setTimeout(() => {
+          endCall();
+          callTimerEl.style.color = "#00b050";
+        }, 1000); 
+
+      };
+    }
+  
     function endCall() {
-      clearInterval(callInterval);
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      
+      clearInterval(callInterval); 
+      
       document.getElementById("callTimer").textContent = "00:00:00";
       document.getElementById("callScreen").style.display = "none";
       document.getElementById("carousel").style.display = "flex";
+ 
       input = "";
       updateDisplay();
     }
-
+  
     const carousel = document.getElementById("carousel");
     const dots = document.querySelectorAll(".dot");
-
+  
     carousel.addEventListener("scroll", () => {
       const scrollLeft = carousel.scrollLeft;
       const width = carousel.offsetWidth;
@@ -482,23 +509,14 @@
         dot.classList.toggle("active", i === index);
       });
     });
-
-    carousel.addEventListener("scroll", () => {
-      const scrollLeft = carousel.scrollLeft;
-      const width = carousel.offsetWidth;
-      const index = Math.round(scrollLeft / width);
-      dots.forEach((dot, i) => {
-        dot.classList.toggle("active", i === index);
-      });
-    });
-
+  
     function sendMessage() {
       const inputEl = document.getElementById("userInput");
       const msg = inputEl.value.trim();
       if (!msg) return;
-
+  
       const chat = document.getElementById("chatContainer");
-
+  
       const userMsg = document.createElement("div");
       userMsg.className = "message sender";
       userMsg.innerHTML = `
@@ -508,29 +526,29 @@
       chat.appendChild(userMsg);
       inputEl.value = "";
       chat.scrollTop = chat.scrollHeight;
-
+  
       setTimeout(() => {
         const replyMsg = document.createElement("div");
         replyMsg.className = "message receiver";
-
+  
         if (msg.toLowerCase() === "pizza") {
           replyMsg.innerHTML = `
             <img class="icon-img" src="Caticon.png" />
-            <div class="bubble" style="background: white; border: 4px solid #06b04b; padding: 0; border-radius: 12px;">
-              <div style="background: #f16d22; color: white; font-weight: bold; font-size: 12px ;text-align: center; padding: 6px; border-top-left-radius: 8px; border-top-right-radius: 8px;">SECRET!</div>
+            <div class="bubble" style="background: white; border: 8px solid #06b04b; padding: 0; border-radius: 12px;">
+              <div style="background: #f16d22; color: white; font-weight: bold; font-size: 12px ;text-align: center; padding: 6px; border-top-left-radius: 4px; border-top-right-radius: 4px;">SECRET!</div>
               <div style="padding: 12px; text-align: center; color: #f16d22; font-size: 12px;">
                 You’ve found the place<br>where your friend<br>has been hiding.
               </div>
               <div style="text-align: center; padding-bottom: 10px;">
                 <a href="Photo.html" target="_blank" style="
-                  background: #0066cc;
-                  color: white;
-                  text-decoration: none;
-                  padding: 6px 20px;
-                  border-radius: 16px;
-                  font-weight: bold;
-                  display: inline-block;
-                ">Open</a>
+                    background: #0066cc;
+                    color: white;
+                    text-decoration: none;
+                    padding: 6px 20px;
+                    border-radius: 16px;
+                    font-weight: bold;
+                    display: inline-block;
+                  ">Open</a>
               </div>
             </div>
           `;
@@ -548,21 +566,21 @@
             <div class="bubble">${reply}</div>
           `;
         }
-
+  
         chat.appendChild(replyMsg);
         chat.scrollTop = chat.scrollHeight;
       }, 500);
     }
+  
     document.getElementById("userInput").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-    e.preventDefault();
-    const index = Math.round(document.getElementById("carousel").scrollLeft / document.getElementById("carousel").offsetWidth);
-    if (index === 1) {
-    sendMessage();
-    }
-}
-});
-
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const index = Math.round(document.getElementById("carousel").scrollLeft / document.getElementById("carousel").offsetWidth);
+        if (index === 1) {
+          sendMessage();
+        }
+      }
+    });
   </script>
 </body>
 </html>
